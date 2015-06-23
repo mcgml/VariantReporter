@@ -88,9 +88,6 @@ public class Report2 {
                         //loop over annotations for this variants
                         for (VEPTranscriptAnnotation transcriptAnnotation : vepFile.getTranscriptLevelRecords().get(vcfRecord.getGenomeVariant().getConcatenatedVariant())) {
 
-                            //skip non-preferred transcripts
-                            if (!preferredTranscripts.contains(transcriptAnnotation.getFeature())) continue;
-
                             writer.print(sampleID.getKey() + "\t");
                             writer.print(vcfRecord.getGenomeVariant().getConcatenatedVariant() + "\t");
 
