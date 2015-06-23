@@ -78,9 +78,9 @@ public class Report2 {
                 for (VCFRecord vcfRecord : vcfFile.getVCFRecords()){
 
                     //skip wildtype bases
-                    if (vcfRecord.getGenomeVariant().getAlt().equals("\\.")) continue;
+                    if (vcfRecord.getGenomeVariant().getAlt().equals(".")) continue;
 
-                    //skip wildtype genotypes & low qualtiy calls & filtered calls
+                    //skip wildtype genotypes & low quality calls & filtered calls
                     if (skipWildtypeGenotype(vcfRecord.getFormatSubFields().get(sampleID.getValue()).get("GT"))) continue;
                     if (isVariantLowQuality(vcfRecord.getFormatSubFields().get(sampleID.getValue()).get("GQ"))) continue;
                     if (!vcfRecord.getFilter().equals("PASS")) continue;
@@ -207,7 +207,7 @@ public class Report2 {
 
         if (genotype.equals("0/1") || genotype.equals("0|1")) {
             writer.print("HET\t");
-        } else if (genotype.equals("1|1")) {
+        } else if (genotype.equals("1|1") || genotype.equals("1/1")) {
             writer.print("HOM\t");
         } else {
             writer.print("\t");
@@ -215,18 +215,11 @@ public class Report2 {
 
     }
     private void printVariantId(String field, PrintWriter writer){
-
-        String[] idFields = field.split(";");
-
-        for (int n = 1; n < idFields.length; ++n) {
-            if (n == 1) {
-                writer.print(idFields[n]);
-            } else {
-                writer.print(";" + idFields[n]);
-            }
+        if (field.equals(".")){
+            writer.print("\t");
+        } else {
+            writer.print(field + "\t");
         }
-        writer.print("\t");
-
     }
     private void printClassification(VCFRecord vcfRecord, PrintWriter writer){
 
