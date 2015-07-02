@@ -45,10 +45,7 @@ public class Report2 {
 
                 //print headers
                 writer.print("SampleID\t");
-                writer.print("Contig\t");
-                writer.print("Position\t");
-                writer.print("Reference\t");
-                writer.print("Alternative\t");
+                writer.print("Variant\t");
                 if (printAF) writer.print("AlleleFrequency\t"); else writer.print("Zygosity\t");
                 if (printDepth) writer.print("Depth\t");
                 if (printFilter) writer.print("Filter\t");
@@ -92,10 +89,7 @@ public class Report2 {
                         for (VEPTranscriptAnnotation transcriptAnnotation : vepFile.getTranscriptLevelRecords().get(vcfRecord.getGenomeVariant().getConcatenatedVariant())) {
 
                             writer.print(sampleID.getKey() + "\t");
-                            writer.print(vcfRecord.getGenomeVariant().getChrom() + "\t");
-                            writer.print(vcfRecord.getGenomeVariant().getPos() + "\t");
-                            writer.print(vcfRecord.getGenomeVariant().getRef() + "\t");
-                            writer.print(vcfRecord.getGenomeVariant().getAlt() + "\t");
+                            writer.print(vcfRecord.getGenomeVariant().getConcatenatedVariant() + "\t");
 
                             if (printAF){
                                 writer.print(vcfRecord.getFormatSubFields().get(sampleID.getValue()).get("VF") + "\t");
@@ -140,10 +134,7 @@ public class Report2 {
 
                         //print variants without transcript annotations
                         writer.print(sampleID.getKey() + "\t");
-                        writer.print(vcfRecord.getGenomeVariant().getChrom() + "\t");
-                        writer.print(vcfRecord.getGenomeVariant().getPos() + "\t");
-                        writer.print(vcfRecord.getGenomeVariant().getRef() + "\t");
-                        writer.print(vcfRecord.getGenomeVariant().getAlt() + "\t");
+                        writer.print(vcfRecord.getGenomeVariant().getConcatenatedVariant() + "\t");
 
                         if (printAF){
                             writer.print(vcfRecord.getFormatSubFields().get(sampleID.getValue()).get("VF"));
