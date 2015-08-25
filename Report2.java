@@ -92,12 +92,19 @@ public class Report2 {
                             writer.print(vcfRecord.getGenomeVariant().getConcatenatedVariant() + "\t");
 
                             if (printAF){
-                                writer.print(vcfRecord.getFormatSubFields().get(sampleID.getValue()).get("VF") + "\t");
+                                if (vcfRecord.getFormatSubFields().get(sampleID.getValue()).containsKey("AF")) writer.print(vcfRecord.getFormatSubFields().get(sampleID.getValue()).get("AF") + "\t");
+                                else writer.print(vcfRecord.getFormatSubFields().get(sampleID.getValue()).get("VF") + "\t");
                             } else {
                                 printGenotype(vcfRecord.getFormatSubFields().get(sampleID.getValue()).get("GT"), writer);
                             }
 
-                            if (printDepth) printCombinedAlleleDepth(vcfRecord.getFormatSubFields().get(sampleID.getValue()).get("AD"), writer);
+                            if (printDepth){
+                                if (vcfRecord.getFormatSubFields().get(sampleID.getValue()).containsKey("DP")){
+                                    writer.print(vcfRecord.getFormatSubFields().get(sampleID.getValue()).get("DP") + "\t");
+                                } else {
+                                    printCombinedAlleleDepth(vcfRecord.getFormatSubFields().get(sampleID.getValue()).get("AD"), writer);
+                                }
+                            }
                             if (printFilter) writer.print(vcfRecord.getFilter() + "\t");
 
                             writer.print(vcfRecord.getFormatSubFields().get(sampleID.getValue()).get("GQ") + "\t");
