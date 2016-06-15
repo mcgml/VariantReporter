@@ -1,5 +1,8 @@
 package nhs.genetics.cardiff;
 
+import nhs.genetics.cardiff.framework.VCFFile;
+import nhs.genetics.cardiff.framework.VEPAnnotationFile;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -9,13 +12,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+/**
+ * Program for reporting variants in VCF format and annotations using varaint effect predictor
+ *
+ * @author  Matt Lyon
+ * @version 1.0
+ * @since   2016-01-13
+ */
 public class Main {
 
     private static final Logger log = Logger.getLogger(Main.class.getName());
+    private static final String version = "1.0.0";
 
     public static void main(String[] args) {
 
         if (args.length < 3 || args.length > 7){
+            System.err.println("VariantReporter v" + version);
             System.err.println("Usage: <VCF> <VEP> <TranscriptList>");
             System.err.println("-d: Print depth");
             System.err.println("-a: Print allele frequency");

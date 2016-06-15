@@ -1,5 +1,10 @@
 package nhs.genetics.cardiff;
 
+import nhs.genetics.cardiff.framework.VCFFile;
+import nhs.genetics.cardiff.framework.VCFRecord;
+import nhs.genetics.cardiff.framework.VEPAnnotationFile;
+import nhs.genetics.cardiff.framework.VEPTranscriptAnnotation;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -9,7 +14,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by ml on 16/04/15.
+ * Class for reporting variants and annotations in text format
+ *
+ * @author  Matt Lyon
+ * @version 1.0
+ * @since   2015-04-16
  */
 @Deprecated
 public class Report {
@@ -88,7 +97,7 @@ public class Report {
                         for (VEPTranscriptAnnotation transcriptAnnotation : vepFile.getTranscriptLevelRecords().get(vcfRecord.getGenomeVariant())) {
 
                             writer.print(sampleID.getKey() + "\t");
-                            writer.print(vcfRecord.getGenomeVariant().getConcatenatedVariant() + "\t");
+                            writer.print(vcfRecord.getGenomeVariant().toString() + "\t");
 
                             if (printAF){
                                 writer.print(vcfRecord.getFormatSubFields().get(sampleID.getValue()).get("VF") + "\t");
@@ -133,7 +142,7 @@ public class Report {
 
                         //print variants without transcript annotations
                         writer.print(sampleID.getKey() + "\t");
-                        writer.print(vcfRecord.getGenomeVariant().getConcatenatedVariant() + "\t");
+                        writer.print(vcfRecord.getGenomeVariant().toString() + "\t");
 
                         if (printAF){
                             writer.print(vcfRecord.getFormatSubFields().get(sampleID.getValue()).get("VF"));

@@ -1,5 +1,10 @@
 package nhs.genetics.cardiff;
 
+import nhs.genetics.cardiff.framework.VCFFile;
+import nhs.genetics.cardiff.framework.VCFRecord;
+import nhs.genetics.cardiff.framework.VEPAnnotationFile;
+import nhs.genetics.cardiff.framework.VEPTranscriptAnnotation;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -8,11 +13,14 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Created by ml on 16/04/15.
- */
-
 //TODO: re-write using htsjdk
+/**
+ * Class for reporting variants and annotations in text format
+ *
+ * @author  Matt Lyon
+ * @version 1.0
+ * @since   2016-04-16
+ */
 public class Report2 {
 
     private static final Logger log = Logger.getLogger(Report2.class.getName());
@@ -83,13 +91,13 @@ public class Report2 {
                     if (!vcfRecord.getFilter().equals("PASS")) continue;
 
                     //print variants with annotations
-                    if (vepFile.getTranscriptLevelRecords().containsKey(vcfRecord.getGenomeVariant().getConcatenatedVariant())) {
+                    if (vepFile.getTranscriptLevelRecords().containsKey(vcfRecord.getGenomeVariant().toString())) {
 
                         //loop over annotations for this variants
-                        for (VEPTranscriptAnnotation transcriptAnnotation : vepFile.getTranscriptLevelRecords().get(vcfRecord.getGenomeVariant().getConcatenatedVariant())) {
+                        for (VEPTranscriptAnnotation transcriptAnnotation : vepFile.getTranscriptLevelRecords().get(vcfRecord.getGenomeVariant().toString())) {
 
                             writer.print(sampleID.getKey() + "\t");
-                            writer.print(vcfRecord.getGenomeVariant().getConcatenatedVariant() + "\t");
+                            writer.print(vcfRecord.getGenomeVariant().toString() + "\t");
 
                             if (printAF){
                                 if (vcfRecord.getFormatSubFields().get(sampleID.getValue()).containsKey("AF")) writer.print(vcfRecord.getFormatSubFields().get(sampleID.getValue()).get("AF") + "\t");
@@ -141,7 +149,7 @@ public class Report2 {
 
                         //print variants without transcript annotations
                         writer.print(sampleID.getKey() + "\t");
-                        writer.print(vcfRecord.getGenomeVariant().getConcatenatedVariant() + "\t");
+                        writer.print(vcfRecord.getGenomeVariant().toString() + "\t");
 
                         if (printAF){
                             writer.print(vcfRecord.getFormatSubFields().get(sampleID.getValue()).get("VF"));
@@ -230,40 +238,40 @@ public class Report2 {
     }
     private void printGenomicAnnotation(VCFRecord vcfRecord, PrintWriter writer){
 
-        if (vepFile.getGenomeLevelRecords().containsKey(vcfRecord.getGenomeVariant().getConcatenatedVariant())) {
+        if (vepFile.getGenomeLevelRecords().containsKey(vcfRecord.getGenomeVariant().toString())) {
 
-            if (vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().getConcatenatedVariant()).isHasAaMAF()) {
-                writer.print(vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().getConcatenatedVariant()).getAaMAF() + "\t");
+            if (vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().toString()).isHasAaMAF()) {
+                writer.print(vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().toString()).getAaMAF() + "\t");
             } else {
                 writer.print("\t");
             }
 
-            if (vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().getConcatenatedVariant()).isHasEaMAF()) {
-                writer.print(vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().getConcatenatedVariant()).getEaMAF() + "\t");
+            if (vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().toString()).isHasEaMAF()) {
+                writer.print(vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().toString()).getEaMAF() + "\t");
             } else {
                 writer.print("\t");
             }
 
-            if (vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().getConcatenatedVariant()).isHasAfrMAF()) {
-                writer.print(vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().getConcatenatedVariant()).getAfrMAF() + "\t");
+            if (vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().toString()).isHasAfrMAF()) {
+                writer.print(vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().toString()).getAfrMAF() + "\t");
             } else {
                 writer.print("\t");
             }
 
-            if (vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().getConcatenatedVariant()).isHasAmrMAF()) {
-                writer.print(vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().getConcatenatedVariant()).getAmrMAF() + "\t");
+            if (vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().toString()).isHasAmrMAF()) {
+                writer.print(vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().toString()).getAmrMAF() + "\t");
             } else {
                 writer.print("\t");
             }
 
-            if (vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().getConcatenatedVariant()).isHasAsnMAF()) {
-                writer.print(vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().getConcatenatedVariant()).getAsnMAF() + "\t");
+            if (vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().toString()).isHasAsnMAF()) {
+                writer.print(vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().toString()).getAsnMAF() + "\t");
             } else {
                 writer.print("\t");
             }
 
-            if (vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().getConcatenatedVariant()).isHasEurMAF()) {
-                writer.print(vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().getConcatenatedVariant()).getEurMAF() + "\t");
+            if (vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().toString()).isHasEurMAF()) {
+                writer.print(vepFile.getGenomeLevelRecords().get(vcfRecord.getGenomeVariant().toString()).getEurMAF() + "\t");
             } else {
                 writer.print("\t");
             }
