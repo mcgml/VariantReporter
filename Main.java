@@ -3,14 +3,16 @@ package nhs.genetics.cardiff;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
-import nhs.genetics.cardiff.framework.TranscriptListParser;
 import nhs.genetics.cardiff.framework.VariantContextStreamFilters;
 import org.apache.commons.cli.*;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -60,11 +62,8 @@ public class Main {
         //parse preferred transcripts list
         HashSet<String> transcripts = null;
         if (commandLine.hasOption("T")){
-            try {
-                TranscriptListParser transcriptListParser = new TranscriptListParser(new File(commandLine.getOptionValue("T")));
-                transcriptListParser.parseListReader();
-
-                transcripts = transcriptListParser.getTranscripts();
+            try (Stream<String> stream = Files.lines(Paths.get(commandLine.getOptionValue("T")))) {
+                transcripts = stream.collect(Collectors.toCollection(HashSet::new));
             } catch (IOException e){
                 log.log(Level.SEVERE, e.getMessage());
                 System.exit(-1);
