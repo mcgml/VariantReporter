@@ -1,19 +1,22 @@
 package nhs.genetics.cardiff;
 
-import nhs.genetics.cardiff.framework.GenomeVariant;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFFileReader;
+import htsjdk.variant.vcf.VCFHeader;
 import nhs.genetics.cardiff.framework.TranscriptListParser;
+import nhs.genetics.cardiff.framework.VariantContextStreamFilters;
 import org.apache.commons.cli.*;
 
 import java.io.*;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * Program for writing VCF file to text output. VCF should be annotated with VEP.
  *
- * @author  Sara Rey
+ * @author  Matt Lyon
  * @since   2016-11-07
  *
  */
@@ -22,7 +25,7 @@ public class Main {
 
     private static final Logger log = Logger.getLogger(Main.class.getName());
     private static final String program = "VCFParse";
-    private static final String version = "1.2.5";
+    private static final String version = "1.3.0";
 
     public static void main(String[] args) {
 
@@ -34,7 +37,6 @@ public class Main {
 
         options.addOption("V", "Variant", true, "Path to input VCF file");
         options.addOption("T", "Transcript", true, "Path to preferred transcript list");
-        options.addOption("C", "Classification", true, "Path to VCF with classifications");
         options.addOption("K", "KnownRefSeq", false, "Report only known RefSeq transcripts (NM)");
         options.addOption("O", "Output", true, "Add prefix to output filename");
 
@@ -69,22 +71,23 @@ public class Main {
             }
         }
 
-        //parse classification VCF
-        HashMap<GenomeVariant, Integer> classifiedVariants = null;
-        if (commandLine.hasOption("C")){
-            classifiedVariants = Vcf.getClassifications(new File(commandLine.getOptionValue("C")));
-        }
+        //open VCF stream & header
+        VCFFileReader vcfFileReader = new VCFFileReader(new File(commandLine.getOptionValue("V")));
+        Stream<VariantContext> stream = vcfFileReader.iterator().stream();
+        VCFHeader vcfHeader = vcfFileReader.getFileHeader();
 
-        //parse VEP annotated VCF file
-        Vcf vcf = new Vcf(new File(commandLine.getOptionValue("V")));
-        vcf.parseAnnotatedVepVcf();
+        //filter variants
+        stream = VariantContextStreamFilters.filterFilteredVariants(stream);
 
-        //write to file
+        //parse remaining Variants
+        Vcf vcf  = new Vcf(vcfHeader, stream);
+        vcf.parseStream();
+
+        //write to text
         try {
-            WriteOut.writeToTable(vcf, transcripts, classifiedVariants, onlyReportKnownRefSeq, outputFilenamePrefix);
-        } catch (IOException e){
-            log.log(Level.SEVERE, "Could not write to file:" + e.getMessage());
-            System.exit(-1);
+            WriteOut.writeToTable(vcf, transcripts, onlyReportKnownRefSeq, outputFilenamePrefix);
+        }catch (IOException e){
+            log.log(Level.SEVERE, "Could not write to file: " + e.getMessage());
         }
 
     }

@@ -10,7 +10,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.logging.Level;
@@ -23,10 +22,12 @@ import java.util.logging.Logger;
  * @since   2016-12-08
  */
 
+//TODO re-write
+
 public class WriteOut {
     private static final Logger log = Logger.getLogger(WriteOut.class.getName());
 
-    public static void writeToTable(Vcf vcf, HashSet<String> preferredTranscripts, HashMap<GenomeVariant, Integer> classifiedVariants, Boolean onlyReportKnownRefSeq, String outputFilenamePrefix) throws IOException {
+    public static void writeToTable(Vcf vcf, HashSet<String> preferredTranscripts, Boolean onlyReportKnownRefSeq, String outputFilenamePrefix) throws IOException {
         log.log(Level.INFO, "Writing results to table");
 
         //write header lines & create new file
@@ -70,12 +71,6 @@ public class WriteOut {
                             printWriter.print("\t");
                             printWriter.print(String.format("%.2f",genotype.getRight()));
                             printWriter.print("\t");
-                            if (classifiedVariants != null && classifiedVariants.containsKey(variantGenotypeEntry.getKey())){
-                                printWriter.print(classifiedVariants.get(variantGenotypeEntry.getKey()));
-                            }
-
-                            //print annotations
-                            printWriter.print("\t");
                             printWriter.print(preferredTranscripts !=null && preferredTranscripts.contains(vepAnnotation.getFeature()));
                             printWriter.print("\t");
                             printWriter.print(vepAnnotation);
@@ -100,12 +95,6 @@ public class WriteOut {
                         printWriter.print(genotype.getLeft().getType());
                         printWriter.print("\t");
                         printWriter.print(String.format("%.2f",genotype.getRight()));
-                        printWriter.print("\t");
-
-                        if (classifiedVariants != null && classifiedVariants.containsKey(variantGenotypeEntry.getKey())){
-                            printWriter.print(classifiedVariants.get(variantGenotypeEntry.getKey()));
-                        }
-
                         printWriter.print("\t");
                         printWriter.println(false);
                     }
