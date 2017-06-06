@@ -1,88 +1,92 @@
 package nhs.genetics.cardiff;
 
-import nhs.genetics.cardiff.framework.VCFFile;
-import nhs.genetics.cardiff.framework.VEPAnnotationFile;
+import nhs.genetics.cardiff.framework.GenomeVariant;
+import nhs.genetics.cardiff.framework.TranscriptListParser;
+import org.apache.commons.cli.*;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 /**
- * Program for reporting variants in VCF format and annotations using varaint effect predictor
+ * Program for writing VCF file to text output. VCF should be annotated with VEP.
  *
- * @author  Matt Lyon
- * @version 1.0
- * @since   2016-01-13
+ * @author  Sara Rey
+ * @since   2016-11-07
+ *
  */
+
 public class Main {
 
     private static final Logger log = Logger.getLogger(Main.class.getName());
-    private static final String version = "1.0.0";
+    private static final String program = "VCFParse";
+    private static final String version = "1.2.5";
 
     public static void main(String[] args) {
 
-        if (args.length < 3 || args.length > 7){
-            System.err.println("VariantReporter v" + version);
-            System.err.println("Usage: <VCF> <VEP> <TranscriptList>");
-            System.err.println("-d: Print depth");
-            System.err.println("-a: Print allele frequency");
-            System.err.println("-f: Print strand bias");
-            System.err.println("-q: Set minimum genotype quality [30]");
-            return;
-        }
+        //parse command line
+        CommandLineParser commandLineParser = new DefaultParser();
+        CommandLine commandLine = null;
+        HelpFormatter formatter = new HelpFormatter();
+        Options options = new Options();
 
-        String line;
+        options.addOption("V", "Variant", true, "Path to input VCF file");
+        options.addOption("T", "Transcript", true, "Path to preferred transcript list");
+        options.addOption("C", "Classification", true, "Path to VCF with classifications");
+        options.addOption("K", "KnownRefSeq", false, "Report only known RefSeq transcripts (NM)");
+        options.addOption("O", "Output", true, "Add prefix to output filename");
 
-        //open files
-        VCFFile vcfFile = new VCFFile(new File(args[0]));
-        VEPAnnotationFile vepFile = new VEPAnnotationFile(new File(args[1]));
+        try {
+            commandLine = commandLineParser.parse(options, args);
 
-        //parse files
-        vcfFile.parseVCF();
-        vepFile.parseVEP();
-
-        //read transcript list
-        HashSet<String> preferredTranscripts = new HashSet<String>();
-        try (BufferedReader transcriptReader = new BufferedReader(new FileReader(new File(args[2])))){
-            while ((line = transcriptReader.readLine()) != null) {
-                if (!line.equals("")) {
-                    String[] fields = line.split("\t");
-                    preferredTranscripts.add(fields[1]);
-                }
-            }
-            transcriptReader.close();
-
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "Could not read transcript file: " + e.getMessage());
-        }
-
-        //initalise report
-        Report2 report = new Report2(vcfFile, vepFile, preferredTranscripts);
-
-        //configure report
-        if (args.length > 3){
-
-            for (int n= 3 ; n < args.length; ++n){
-                if (args[n].equals("-d")){
-                    report.setPrintDepth(true);
-                } else if (args[n].equals("-a")){
-                    report.setPrintAF(true);
-                } else if (args[n].equals("-f")){
-                    report.setPrintFilter(true);
-                } else if (Pattern.matches("^-q.*", args[n])){
-                    String[] split = args[n].split("q");
-                    report.setMinGQ(Integer.parseInt(split[1]));
-                }
+            if (!commandLine.hasOption("V")){
+                throw new NullPointerException("Incorrect arguments");
             }
 
+        } catch (ParseException | NullPointerException e){
+            formatter.printHelp(program + " " + version, options);
+            log.log(Level.SEVERE, e.getMessage());
+            System.exit(-1);
         }
 
-        //write report
-        report.writeReport();
+        //get opts
+        boolean onlyReportKnownRefSeq = commandLine.hasOption("K");
+        String outputFilenamePrefix = commandLine.getOptionValue("O");
+
+        //parse preferred transcripts list
+        HashSet<String> transcripts = null;
+        if (commandLine.hasOption("T")){
+            try {
+                TranscriptListParser transcriptListParser = new TranscriptListParser(new File(commandLine.getOptionValue("T")));
+                transcriptListParser.parseListReader();
+
+                transcripts = transcriptListParser.getTranscripts();
+            } catch (IOException e){
+                log.log(Level.SEVERE, e.getMessage());
+                System.exit(-1);
+            }
+        }
+
+        //parse classification VCF
+        HashMap<GenomeVariant, Integer> classifiedVariants = null;
+        if (commandLine.hasOption("C")){
+            classifiedVariants = Vcf.getClassifications(new File(commandLine.getOptionValue("C")));
+        }
+
+        //parse VEP annotated VCF file
+        Vcf vcf = new Vcf(new File(commandLine.getOptionValue("V")));
+        vcf.parseAnnotatedVepVcf();
+
+        //write to file
+        try {
+            WriteOut.writeToTable(vcf, transcripts, classifiedVariants, onlyReportKnownRefSeq, outputFilenamePrefix);
+        } catch (IOException e){
+            log.log(Level.SEVERE, "Could not write to file:" + e.getMessage());
+            System.exit(-1);
+        }
+
     }
+
 }
