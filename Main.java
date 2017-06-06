@@ -71,13 +71,14 @@ public class Main {
             }
         }
 
-        //open VCF stream & header
+        //open VCF
         VCFFileReader vcfFileReader = new VCFFileReader(new File(commandLine.getOptionValue("V")));
         Stream<VariantContext> stream = vcfFileReader.iterator().stream();
         VCFHeader vcfHeader = vcfFileReader.getFileHeader();
 
         //filter variants
         stream = VariantContextStreamFilters.filterFilteredVariants(stream);
+        //TODO
 
         //parse remaining Variants
         Vcf vcf  = new Vcf(vcfHeader, stream);
@@ -86,7 +87,7 @@ public class Main {
         //write to text
         try {
             WriteOut.writeToTable(vcf, transcripts, onlyReportKnownRefSeq, outputFilenamePrefix);
-        }catch (IOException e){
+        } catch (IOException e){
             log.log(Level.SEVERE, "Could not write to file: " + e.getMessage());
         }
 
