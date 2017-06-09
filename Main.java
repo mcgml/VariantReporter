@@ -3,7 +3,6 @@ package nhs.genetics.cardiff;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 import htsjdk.variant.vcf.VCFHeader;
-import nhs.genetics.cardiff.framework.VariantContextStreamFilters;
 import org.apache.commons.cli.*;
 
 import java.io.*;
