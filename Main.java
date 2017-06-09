@@ -41,6 +41,7 @@ public class Main {
         options.addOption("T", "Transcript", true, "Path to preferred transcript list");
         options.addOption("K", "KnownRefSeq", false, "Report only known RefSeq transcripts (NM)");
         options.addOption("O", "Output", true, "Add prefix to output filename");
+        options.addOption("S", "Sample", true, "Sample");
 
         try {
             commandLine = commandLineParser.parse(options, args);
@@ -71,23 +72,31 @@ public class Main {
         }
 
         //open VCF
-        VCFFileReader vcfFileReader = new VCFFileReader(new File(commandLine.getOptionValue("V")));
-        Stream<VariantContext> stream = vcfFileReader.iterator().stream();
-        VCFHeader vcfHeader = vcfFileReader.getFileHeader();
+        try (VCFFileReader vcfFileReader = new VCFFileReader(new File(commandLine.getOptionValue("V")))){
 
-        //filter variants
-        stream = VariantContextStreamFilters.filterFilteredVariants(stream);
-        //TODO
+            //get headers
+            VCFHeader vcfHeader = vcfFileReader.getFileHeader();
 
-        //parse remaining Variants
-        Vcf vcf  = new Vcf(vcfHeader, stream);
-        vcf.parseStream();
+            //open stream and optionally filter
+            Stream<VariantContext> stream = Filters.openStream(vcfFileReader, commandLine.getOptionValue("S"));
 
-        //write to text
-        try {
-            WriteOut.writeToTable(vcf, transcripts, onlyReportKnownRefSeq, outputFilenamePrefix);
-        } catch (IOException e){
-            log.log(Level.SEVERE, "Could not write to file: " + e.getMessage());
+            /*
+            *
+            * TODO filter stream
+            *
+            * */
+
+            //parse VCF
+            Vcf vcf  = new Vcf(vcfHeader, commandLine.getOptionValue("S"));
+            vcf.parseHeaders();
+            vcf.parseVcf(stream);
+
+            //write to text output
+            try {
+                WriteOut.writeToTable(vcf, transcripts, onlyReportKnownRefSeq, outputFilenamePrefix);
+            } catch (IOException e){
+                log.log(Level.SEVERE, "Could not write to file: " + e.getMessage());
+            }
         }
 
     }

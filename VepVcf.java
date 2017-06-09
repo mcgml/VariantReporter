@@ -2,7 +2,6 @@ package nhs.genetics.cardiff;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import htsjdk.variant.variantcontext.Genotype;
-import htsjdk.variant.variantcontext.GenotypeBuilder;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFHeader;
 import nhs.genetics.cardiff.framework.GenomeVariant;
@@ -25,7 +24,6 @@ import java.util.stream.Stream;
 public class Vcf {
 
     private static final Logger log = Logger.getLogger(Vcf.class.getName());
-    private Stream<VariantContext> stream;
     private VCFHeader vcfHeader;
     private String[] vepHeaders;
     private Integer vepVersion;
@@ -34,14 +32,15 @@ public class Vcf {
     private ArrayList<String> sampleNames;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private HashMap<String, SampleMetaData> sampleMetaDataHashMap = new HashMap<>();
+    private String sample;
 
-    public Vcf(VCFHeader vcfHeader, Stream<VariantContext> stream) {
+    public Vcf(VCFHeader vcfHeader, String sample) {
         this.vcfHeader = vcfHeader;
-        this.stream = stream;
+        this.sample = sample;
     }
 
-    public void parseStream() {
-        log.log(Level.INFO, "Parsing VEP annotated VCF file");
+    public void parseHeaders(){
+        log.log(Level.INFO, "Parsing VCF headers");
 
         //get VEP version
         try {
@@ -59,8 +58,11 @@ public class Vcf {
 
         //get sample list
         sampleNames = vcfHeader.getSampleNamesInOrder();
+    }
 
-        //read VCF line by line
+    public void parseVcf(Stream<VariantContext> stream) {
+
+        //read filtered VCF line by line
         stream.forEach(variantContext -> {
 
             //split site level annotations and pair with headers
@@ -122,14 +124,6 @@ public class Vcf {
 
                         if (genotype.getAlleles().get(0).getBaseString().equals("*") || genotype.getAlleles().get(1).getBaseString().equals("*")) {
                             return;
-                        }
-
-                        //FIX: add DP to genotype if missing and only 1 sample TODO remove & add DP to genotype field
-                        if (!genotype.hasDP() && variantContext.getNSamples() == 1){
-                            GenotypeBuilder genotypeBuilder = new GenotypeBuilder();
-                            genotypeBuilder.copy(genotype);
-                            genotypeBuilder.DP(variantContext.getAttributeAsInt("DP", -1));
-                            genotype = genotypeBuilder.make();
                         }
 
                         //store genotype
