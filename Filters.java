@@ -1,4 +1,4 @@
-package nhs.genetics.cardiff;
+package nhs.genetics.cardiff.framework;
 
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
